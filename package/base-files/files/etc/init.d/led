@@ -167,7 +167,37 @@ load_led() {
 		esac
 	}
 }
+boot() {
+    local gpio_path="/sys/class/gpio/modem_power/value"
+    local count=0
 
+    echo "Waiting for modem_power GPIO..."
+    
+    # 1. 等待 GPIO 文件生成（防止因硬件驱动加载慢导致的报错）
+    while [ ! -f "$gpio_path" ]; do
+        sleep 1
+        count=$((count + 1))
+        if [ $count -gt 10 ]; then
+            echo "Error: GPIO not found, skipping reset."
+            return 1
+        fi
+    done
+
+    # 2. 执行你的核心动作
+    echo "Modem Reset: Pulsing POWER pin..."
+
+    # 拉低电平 (0)
+    echo 0 > "$gpio_path"
+    
+    # 延时 3 秒
+    sleep 3
+    
+    # 拉高电平 (1)
+    echo 1 > "$gpio_path"
+
+    echo "Modem Reset: DONE. Exiting."
+    # 函数结束，脚本自然退出，不会有任何进程残留
+}
 start() {
 	[ -e /sys/class/leds/ ] && {
 		[ -s /var/run/led.state ] && {
