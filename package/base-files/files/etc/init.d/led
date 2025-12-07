@@ -196,3 +196,8 @@ start() {
 		config_foreach load_led led "$1"
 	}
 }
+stop() {
+    echo "Stopping my service..."
+    echo 0 > /sys/class/gpio/modem_power/value
+    # 这里放停止程序的具体命令
+}
